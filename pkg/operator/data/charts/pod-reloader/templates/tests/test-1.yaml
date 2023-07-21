@@ -1,0 +1,81 @@
+{{- $deploymentName := printf "%s-test-1-%s" (include "pod-reloader.fullname" .) (randAlphaNum 10 | lower) }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ $deploymentName }}
+  labels:
+    {{- include "pod-reloader.labels" . | nindent 4 }}
+  annotations:
+    pod-reloader.cs.sap.com/configmaps: {{ $deploymentName }}
+    helm.sh/hook: test
+    helm.sh/hook-weight: "0"
+    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ $deploymentName }}
+  template:
+    metadata:
+      labels:
+        app: {{ $deploymentName }}
+    spec:
+      containers:
+      - name: nginx
+        image: nginx
+        envFrom:
+        - configMapRef:
+            name: {{ $deploymentName }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ $deploymentName }}
+  labels:
+    {{- include "pod-reloader.labels" . | nindent 4 }}
+  annotations:
+    helm.sh/hook: test
+    helm.sh/hook-weight: "0"
+    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+data:
+  MYKEY: MYVALUE_1
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: {{ include "pod-reloader.fullname" . }}-test-1
+  labels:
+    {{- include "pod-reloader.labels" . | nindent 4 }}
+  annotations:
+    helm.sh/hook: test
+    helm.sh/hook-weight: "1"
+    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+spec:
+  containers:
+  - name: kubectl
+    image: bitnami/kubectl:{{ .Capabilities.KubeVersion.Version | trimPrefix "v" }}
+    command:
+    - bash
+    - -ec
+    - |
+        kubectl rollout status deployment/{{ $deploymentName }} -w --timeout 60s
+        pod=$(kubectl get pods -l app={{ $deploymentName }} --field-selector=status.phase==Running -o jsonpath='{.items[0].metadata.name}')
+        value=$(kubectl exec $pod -- sh -c 'echo $MYKEY')
+        if [ "$value" != "MYVALUE_1" ]; then
+          exit 1
+        fi
+
+        kubectl patch configmap {{ $deploymentName }} --patch '{"data": {"MYKEY": "MYVALUE_2"}}'
+        sleep 5
+
+        kubectl rollout status deployment/{{ $deploymentName }} -w --timeout 60s
+        pod=$(kubectl get pods -l app={{ $deploymentName }} --field-selector=status.phase==Running -o jsonpath='{.items[0].metadata.name}')
+        value=$(kubectl exec $pod -- sh -c 'echo $MYKEY')
+        if [ "$value" != "MYVALUE_2" ]; then
+          exit 1
+        fi
+
+  serviceAccountName: {{ include "pod-reloader.fullname" . }}-test
+  terminationGracePeriodSeconds: 3
+  restartPolicy: Never
