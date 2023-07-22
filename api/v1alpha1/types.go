@@ -22,6 +22,8 @@ type PodReloaderSpec struct {
 	// +optional
 	Image                          component.ImageSpec `json:"image"`
 	component.KubernetesProperties `json:",inline"`
+	ObjectSelector                 *metav1.LabelSelector `json:"objectSelector,omitempty"`
+	NamespaceSelector              *metav1.LabelSelector `json:"namespaceSelector,omitempty"`
 }
 
 // PodReloaderStatus defines the observed state of PodReloader.

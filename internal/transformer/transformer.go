@@ -28,6 +28,18 @@ func (t *transformer) TransformParameters(namespace string, name string, paramet
 		delete(v["image"].(map[string]any), "pullSecret")
 	}
 
+	if s.ObjectSelector != nil || s.NamespaceSelector != nil {
+		v["webhook"] = make(map[string]any)
+		if s.ObjectSelector != nil {
+			v["webhook"].(map[string]any)["objectSelector"] = v["objectSelector"]
+		}
+		if s.NamespaceSelector != nil {
+			v["webhook"].(map[string]any)["namespaceSelector"] = v["namespaceSelector"]
+		}
+	}
+	delete(v, "objectSelector")
+	delete(v, "namespaceSelector")
+
 	delete(v, "namespace")
 	delete(v, "name")
 

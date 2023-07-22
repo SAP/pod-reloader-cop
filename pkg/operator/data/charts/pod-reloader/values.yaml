@@ -58,7 +58,13 @@ webhook:
     issuerKind: ""
     # -- Issuer name (only relevant if enabled is true; if unset, a self-signed issuer is used)
     issuerName: ""
-  # -- Object selector used by webhook
-  objectSelectorExpressions: []
-  # -- Namespace selector used by webhook
-  namespaceSelectorExpressions: []
+  objectSelector:
+    # -- Object selector matchLabels, used by webhook
+    matchLabels: {}
+    # -- Object selector matchExpressions, used by webhook
+    matchExpressions: []
+  namespaceSelector:
+    # -- Namespace selector matchLabels, used by webhook
+    matchLabels: {}
+    # -- Namespace selector matchExpressions, used by webhook
+    matchExpressions: []
