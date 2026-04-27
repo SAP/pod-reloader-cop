@@ -1,6 +1,6 @@
 # pod-reloader
 
-![Version: 0.1.80](https://img.shields.io/badge/Version-0.1.80-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: v0.1.82](https://img.shields.io/badge/AppVersion-v0.1.82-informational?style=flat-square)
+![Version: 0.1.81](https://img.shields.io/badge/Version-0.1.81-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: v0.1.83](https://img.shields.io/badge/AppVersion-v0.1.83-informational?style=flat-square)
 
 A Helm chart for https://github.com/sap/pod-reloader
 
